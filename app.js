@@ -160,8 +160,7 @@
     paths.forEach((p, k) => p.classList.toggle('sel', k === i));
     [...document.querySelectorAll('.row')].forEach(r => r.classList.toggle('on', +r.dataset.i === i));
     const it = IT[i];
-    const lat = (41.3169 + (H / 2 - it[8]) * 0.000009).toFixed(5);
-    const lon = (22.5327 + (it[7] - W / 2) * 0.000010).toFixed(5);
+    const lat = it[14].toFixed(6), lon = it[15].toFixed(6);
     const card = $('dcard');
     card.classList.add('show');
     card.innerHTML = '<span class="x" id="dcx">✕</span><div class="t">парцела ' + it[0] + '</div>' +
@@ -171,7 +170,7 @@
       '<div class="r"><span>сопственик</span><b>' + (it[5] || '—') + '</b></div>' +
       '<div class="r"><span>статус</span><b>' + ((it[6] & 2) ? 'државна' : ((it[6] & 1) ? 'црковна' : 'приватна')) + '</b></div>' +
       '<div class="r"><span>координати</span><b>' + lat + ', ' + lon + '</b></div>' +
-      '<div class="r"><span>карта</span><b><a target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + lat + ',' + lon + '">Google Maps ↗</a></b></div>';
+      '<div class="r"><span>карта</span><b><a target="_blank" rel="noopener" href="https://www.google.com/maps?q=' + lat + ',' + lon + '&z=18">Google Maps ↗</a></b></div>';
     $('dcx').onclick = () => card.classList.remove('show');
     if (zoom) {
       const pad = Math.max(16, Math.max(it[11], it[12]) * 1.1);
