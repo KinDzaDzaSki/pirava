@@ -38,22 +38,33 @@
     '&tilematrixset=APP_GRID_ORTOFOTO_2023&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fjpeg' +
     '&TileMatrix=APP_GRID_ORTOFOTO_2023%3A' + z + '&TileCol=' + c + '&TileRow=' + r;
 
+  /* bundled WebP tiles (z8–z12), served locally — falls back to AKN when out of range */
+  const LOCAL = { 6: [98, 103, 48, 53], 7: [198, 204, 99, 105], 8: [399, 406, 201, 208],
+                  9: [800, 812, 403, 416], 10: [1603, 1622, 810, 829],
+                  11: [3209, 3242, 1622, 1655], 12: [6443, 6466, 3269, 3292] };
+  function localTile(z, c, r) {
+    const b = LOCAL[z];
+    if (!b || c < b[0] || c > b[1] || r < b[2] || r > b[3]) return null;
+    return 'tiles/z' + z + '/' + c + '_' + r + '.webp';
+  }
+
   let orthoTimer = null, orthoKey = '';
+  function tileRange(z) {
+    const res = LEV[z][0], tly = LEV[z][1], tm = 256 * res;
+    const X0 = vb[0] + OX, X1 = vb[0] + vb[2] + OX;
+    const Nt = OY + H - vb[1], Nb = OY + H - (vb[1] + vb[3]);
+    const c0 = Math.floor((X0 - TLX) / tm) - 1, c1 = Math.floor((X1 - TLX) / tm) + 1;
+    const r0 = Math.floor((tly - Nt) / tm) - 1, r1 = Math.floor((tly - Nb) / tm) + 1;
+    return { z, tm, tly, c0, c1, r0, r1, count: (c1 - c0 + 1) * (r1 - r0 + 1) };
+  }
   function orthoPlan() {
-    const px = svg.clientWidth || 900;
-    const target = vb[2] / px;
-    let z = 0, best = Infinity;
-    LEV.forEach((l, i) => { const d = Math.abs(l[0] - target); if (d < best) { best = d; z = i; } });
-    z = Math.max(4, Math.min(12, z));
-    for (; z <= 12; z++) {
-      const tm = 256 * LEV[z][0], tly = LEV[z][1];
-      const X0 = vb[0] + OX, X1 = vb[0] + vb[2] + OX;
-      const Nt = OY + H - vb[1], Nb = OY + H - (vb[1] + vb[3]);
-      const c0 = Math.floor((X0 - TLX) / tm) - 1, c1 = Math.floor((X1 - TLX) / tm) + 1;
-      const r0 = Math.floor((tly - Nt) / tm) - 1, r1 = Math.floor((tly - Nb) / tm) + 1;
-      if ((c1 - c0 + 1) * (r1 - r0 + 1) <= 64 || z === 12) return { z, tm, tly, c0, c1, r0, r1 };
-    }
-    return null;
+    const target = vb[2] / (svg.clientWidth || 900);
+    // coarsest level that is still at least as detailed as needed
+    let z = 0;
+    for (let i = LEV.length - 1; i >= 0; i--) { if (LEV[i][0] >= target * 0.8) { z = i; break; } }
+    let p = tileRange(z);
+    while (p.count > 64 && z > 0) { z--; p = tileRange(z); }
+    return p;
   }
   function orthoDraw(force) {
     if (!state.ortho) { gO.textContent = ''; orthoKey = ''; return; }
@@ -71,7 +82,13 @@
       im.setAttribute('y', (H - (nTop - OY)).toFixed(1));
       im.setAttribute('width', tm); im.setAttribute('height', tm);
       im.setAttribute('preserveAspectRatio', 'none');
-      im.setAttribute('href', tileURL(z, c, r));
+      const loc = localTile(z, c, r);
+      im.setAttribute('href', loc || tileURL(z, c, r));
+      if (loc) im.addEventListener('error', () => {
+        if (im.dataset.fb) return;
+        im.dataset.fb = '1';
+        im.setAttribute('href', tileURL(z, c, r));
+      });
       im.setAttribute('opacity', '0');
       im.addEventListener('load', () => im.setAttribute('opacity', '1'));
       frag.appendChild(im);
