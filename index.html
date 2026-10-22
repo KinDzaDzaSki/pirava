@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="mk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="theme-color" content="#12110f">
+<title>ПИРАВА · катастарска мапа</title>
+<meta name="description" content="Интерактивна катастарска мапа на КО Пирава (кат. одд. Валандово) — парцели, површини, сопственици, ортофото.">
+<link rel="preload" href="data.js" as="script">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">ПИРАВА<span>катастар · АКН</span></div>
+    <nav class="tabs">
+      <button class="tab on" data-tab="all">Сите <b id="nAll">—</b></button>
+      <button class="tab" data-tab="band">Приватни 800–1.500 m² <b id="nBand">—</b></button>
+      <button class="tab" data-tab="five">5 месности <b id="nFive">—</b></button>
+      <button class="tab" data-tab="gz">Градежно неизградено <b id="nGz">—</b></button>
+    </nav>
+    <button id="orthoBtn" class="tog" title="Ортофото подлога">Ортофото</button>
+    <input id="q" placeholder="Барај парцела или сопственик…" autocomplete="off">
+    <button id="exp" title="Извези CSV">CSV ↓</button>
+    <button id="fab" title="Филтри и листа">☰</button>
+  </header>
+
+  <main>
+    <aside id="aside">
+      <div class="sheet-handle" id="handle"></div>
+      <div class="cards">
+        <div class="cardS"><b id="c1">—</b><span>парцели</span></div>
+        <div class="cardS"><b id="c2">—</b><span>површина</span></div>
+        <div class="cardS"><b id="c3">—</b><span>медијана</span></div>
+      </div>
+      <div class="sec">Користење</div>
+      <div class="chips" id="cats"></div>
+      <div class="sec">Месност</div>
+      <div class="chips" id="locs"></div>
+      <div class="resbar"><span>Резултати</span><em id="resN">—</em></div>
+      <div class="list" id="list"></div>
+    </aside>
+
+    <div id="map">
+      <svg id="svg" viewBox="0 0 1899 1910" preserveAspectRatio="xMidYMid meet">
+        <g id="gOrtho"></g>
+        <g id="gP"></g>
+        <g id="gA"></g>
+        <g id="gS"></g>
+      </svg>
+      <div class="zoombox">
+        <button id="zin" aria-label="Зумирај">+</button>
+        <button id="zout" aria-label="Одзумирај">−</button>
+        <button id="zfit" aria-label="Цела КО">⤢</button>
+      </div>
+      <div class="dcard" id="dcard"></div>
+      <div class="legend" id="legend"></div>
+      <div class="mini" id="mini"></div>
+      <div class="north">N<br>▲</div>
+      <div class="scalebar"><div class="b" id="sb"></div><span id="sbt">100 m</span></div>
+      <div class="tip" id="tip"></div>
+      <div class="attrib" id="attrib">© АКН · ортофото 2023</div>
+    </div>
+  </main>
+</div>
+<div id="loader"><div class="spin"></div><span>Се вчитува катастарот…</span></div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
